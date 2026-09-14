@@ -1,0 +1,44 @@
+{
+  "name": "Release explicit A",
+  "on": {
+    "release": {
+      "types": [
+        "created",
+        "published",
+        "prereleased",
+        "deleted"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "probe": {
+      "name": "Explicit A",
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 8,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "id": "probe",
+          "name": "Validate release payload and checkout",
+          "run": "python fixtures/release/release_probe.py",
+          "env": {
+            "ALLOWED_ACTIONS": "created,published,prereleased,deleted",
+            "EXPECTED_TAG": "${{ github.event.release.tag_name }}",
+            "WORKFLOW_MARKER": "explicit-a"
+          }
+        }
+      ]
+    }
+  }
+}

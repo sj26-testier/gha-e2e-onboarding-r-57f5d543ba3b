@@ -1,0 +1,70 @@
+{
+  "name": "Release empty types",
+  "on": {
+    "release": {
+      "types": []
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "probe": {
+      "name": "Empty types payload",
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 8,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "id": "probe",
+          "name": "Validate release payload and checkout",
+          "run": "python fixtures/release/release_probe.py",
+          "env": {
+            "ALLOWED_ACTIONS": "created,edited,published,unpublished,prereleased,released,deleted",
+            "EXPECTED_TAG": "${{ github.event.release.tag_name }}",
+            "WORKFLOW_MARKER": "empty"
+          }
+        }
+      ],
+      "outputs": {
+        "ok": "${{ steps.probe.outputs.ok }}"
+      }
+    },
+    "gate": {
+      "name": "Empty types gate",
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 8,
+      "steps": [
+        {
+          "uses": "actions/checkout@v4"
+        },
+        {
+          "uses": "actions/setup-python@v5",
+          "with": {
+            "python-version": "3.12"
+          }
+        },
+        {
+          "id": "probe",
+          "name": "Validate release payload and checkout",
+          "run": "python fixtures/release/release_probe.py",
+          "env": {
+            "ALLOWED_ACTIONS": "created,edited,published,unpublished,prereleased,released,deleted",
+            "EXPECTED_TAG": "${{ github.event.release.tag_name }}",
+            "WORKFLOW_MARKER": "empty-gate"
+          }
+        }
+      ],
+      "if": "${{ needs.probe.outputs.ok == 'true' }}",
+      "needs": "probe"
+    }
+  }
+}
